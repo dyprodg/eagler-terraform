@@ -134,11 +134,18 @@ resource "aws_lb_listener" "my_listener" {
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   certificate_arn   = var.aws_cert_arn
 
-  default_action {
-    target_group_arn = aws_lb_target_group.my_target_group.arn
-    type             = "forward"
-  }
+    default_action {
+        type             = "forward"
+        target_group_arn = aws_lb_target_group.my_target_group.arn
+        forward {
+            target_group {
+              arn = aws_lb_target_group.my_target_group.arn
+            }
+            
+        }
+    }
 }
+
 
 # Create Route 53 record
 resource "aws_route53_record" "my_record" {
