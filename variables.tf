@@ -1,7 +1,7 @@
 variable "machine_ami" {
   description = "AMI ID for the machine"
   type        = string
-  default     = "ami-000408fd44a452b96"
+  default     = "ami-0c038589ac3f35838"
 }
 
 variable "aws_cert_arn" {
