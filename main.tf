@@ -62,18 +62,45 @@ resource "aws_route_table_association" "subnet_b_association" {
 resource "aws_security_group" "instance_sg" {
   vpc_id = aws_vpc.my_vpc.id
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "allow_lb_to_instance" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  security_group_id = aws_security_group.instance_sg.id
+  source_security_group_id = aws_security_group.sh_sg_for_elb.id
+}
+
+resource "aws_security_group_rule" "allow_ssh" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.instance_sg.id
+}
+
+
+#Security Group for Load Balancer
+resource "aws_security_group" "sh_sg_for_elb" {
+  name   = "eagler-sg_for_elb"
+  vpc_id = aws_vpc.my_vpc.id
 
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description      = "Allow https request from anywhere"
+    protocol         = "tcp"
+    from_port        = 443
+    to_port          = 443
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   egress {
@@ -82,7 +109,9 @@ resource "aws_security_group" "instance_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
 }
+
 
 # Create Launch Configuration
 resource "aws_launch_configuration" "my_lc" {
@@ -100,6 +129,7 @@ resource "aws_lb" "my_lb" {
   name               = "eagler-loadbalancer"
   load_balancer_type = "application"
   subnets            = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id]
+  security_groups = [aws_security_group.sh_sg_for_elb.id]
 }
 
 
