@@ -46,6 +46,7 @@ resource "aws_route_table" "my_route_table" {
   }
 }
 
+
 # Associate subnets with the route table
 resource "aws_route_table_association" "subnet_a_association" {
   subnet_id      = aws_subnet.subnet_a.id
@@ -91,6 +92,7 @@ resource "aws_launch_configuration" "my_lc" {
   security_groups      = [aws_security_group.instance_sg.id]
   iam_instance_profile = var.ec2_role
   key_name             = "ansible"
+  associate_public_ip_address = true
 }
 
 # Create Load Balancer
