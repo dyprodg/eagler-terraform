@@ -1,0 +1,14 @@
+# Ignore Terraform files
+*.tfstate
+*.tfstate.backup
+*.tfplan
+terraform.tfvars
+
+# Ignore local .terraform directories
+**/.terraform/
+
+# Ignore .tfvars files that are not meant to be shared
+*.auto.tfvars
+*.auto.tfvars.json
+
+*.terraform.lock.hcl
