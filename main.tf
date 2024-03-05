@@ -13,12 +13,12 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Create VPC
+# VPC
 resource "aws_vpc" "my_vpc" {
   cidr_block = "10.0.0.0/16"
 }
 
-# Create subnets in Availability Zones a and b
+# Subnets in Availability Zones a and b
 resource "aws_subnet" "subnet_a" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "10.0.1.0/24"
@@ -31,12 +31,12 @@ resource "aws_subnet" "subnet_b" {
   availability_zone = "eu-central-1b"
 }
 
-# Create Internet Gateway
+# Internet Gateway
 resource "aws_internet_gateway" "my_igw" {
   vpc_id = aws_vpc.my_vpc.id
 }
 
-# Create Route Table
+# Route Table
 resource "aws_route_table" "my_route_table" {
   vpc_id = aws_vpc.my_vpc.id
 
@@ -156,8 +156,22 @@ resource "aws_autoscaling_group" "my_asg" {
   launch_configuration      = aws_launch_configuration.my_lc.name
   health_check_type         = "EC2"
   health_check_grace_period = 60
-
   target_group_arns         = [aws_lb_target_group.my_target_group.arn]
+}
+
+# Autoscaling Policy
+resource "aws_autoscaling_policy" "my_scaling_policy" {
+  name                   = "eagler-asg-scaling-policy"
+  autoscaling_group_name = aws_autoscaling_group.my_asg.name
+  policy_type            = "TargetTrackingScaling"
+  estimated_instance_warmup = 200
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 50.0
+  }
 }
 
 # Create Listener
@@ -178,6 +192,23 @@ resource "aws_lb_listener" "my_listener" {
             
         }
     }
+}
+
+# HTTP Listener
+resource "aws_lb_listener" "http_listener" {
+  load_balancer_arn = aws_lb.my_lb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
 }
 
 
