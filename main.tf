@@ -143,15 +143,15 @@ resource "aws_lb_target_group" "my_target_group" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.my_vpc.id
 
-  deregistration_delay = 10
+  deregistration_delay = 60
 }
 
 # Attach Auto Scaling Group to Target Group
 resource "aws_autoscaling_group" "my_asg" {
   name                      = "eagler-asg"
-  min_size                  = 2
+  min_size                  = 1
   max_size                  = 4
-  desired_capacity          = 2
+  desired_capacity          = 1
   vpc_zone_identifier       = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id]
   launch_configuration      = aws_launch_configuration.my_lc.name
   health_check_type         = "EC2"
@@ -164,7 +164,7 @@ resource "aws_autoscaling_policy" "my_scaling_policy" {
   name                   = "eagler-asg-scaling-policy"
   autoscaling_group_name = aws_autoscaling_group.my_asg.name
   policy_type            = "TargetTrackingScaling"
-  estimated_instance_warmup = 200
+  estimated_instance_warmup = 120
 
   target_tracking_configuration {
     predefined_metric_specification {
