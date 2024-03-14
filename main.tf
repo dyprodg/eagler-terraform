@@ -224,3 +224,16 @@ resource "aws_route53_record" "my_record" {
     evaluate_target_health = true
   }
 }
+
+resource "aws_route53_record" "base_domain_record" {
+  zone_id = "Z035307818U753YJFFW2Q"
+  name    = "justanothersocialmedia.net"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.my_lb.dns_name
+    zone_id                = aws_lb.my_lb.zone_id
+    evaluate_target_health = true
+  }
+}
+
