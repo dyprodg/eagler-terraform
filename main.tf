@@ -71,11 +71,11 @@ resource "aws_security_group" "instance_sg" {
 }
 
 resource "aws_security_group_rule" "allow_lb_to_instance" {
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  security_group_id = aws_security_group.instance_sg.id
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.instance_sg.id
   source_security_group_id = aws_security_group.sh_sg_for_elb.id
 }
 
@@ -103,6 +103,15 @@ resource "aws_security_group" "sh_sg_for_elb" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
+  ingress {
+    description      = "Allow http request from anywhere"
+    protocol         = "tcp"
+    from_port        = 80
+    to_port          = 80
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -115,12 +124,12 @@ resource "aws_security_group" "sh_sg_for_elb" {
 
 # Create Launch Configuration
 resource "aws_launch_configuration" "my_lc" {
-  name                 = "eagler-launch-configuration"
-  image_id             = var.machine_ami
-  instance_type        = "t2.micro"
-  security_groups      = [aws_security_group.instance_sg.id]
-  iam_instance_profile = var.ec2_role
-  key_name             = "ansible"
+  name                        = "eagler-launch-configuration"
+  image_id                    = var.machine_ami
+  instance_type               = "t2.micro"
+  security_groups             = [aws_security_group.instance_sg.id]
+  iam_instance_profile        = var.ec2_role
+  key_name                    = "ansible"
   associate_public_ip_address = true
 }
 
@@ -129,7 +138,7 @@ resource "aws_lb" "my_lb" {
   name               = "eagler-loadbalancer"
   load_balancer_type = "application"
   subnets            = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id]
-  security_groups = [aws_security_group.sh_sg_for_elb.id]
+  security_groups    = [aws_security_group.sh_sg_for_elb.id]
 
 
 }
@@ -161,9 +170,9 @@ resource "aws_autoscaling_group" "my_asg" {
 
 # Autoscaling Policy
 resource "aws_autoscaling_policy" "my_scaling_policy" {
-  name                   = "eagler-asg-scaling-policy"
-  autoscaling_group_name = aws_autoscaling_group.my_asg.name
-  policy_type            = "TargetTrackingScaling"
+  name                      = "eagler-asg-scaling-policy"
+  autoscaling_group_name    = aws_autoscaling_group.my_asg.name
+  policy_type               = "TargetTrackingScaling"
   estimated_instance_warmup = 120
 
   target_tracking_configuration {
@@ -182,16 +191,16 @@ resource "aws_lb_listener" "my_listener" {
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   certificate_arn   = var.aws_cert_arn
 
-    default_action {
-        type             = "forward"
-        target_group_arn = aws_lb_target_group.my_target_group.arn
-        forward {
-            target_group {
-              arn = aws_lb_target_group.my_target_group.arn
-            }
-            
-        }
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.my_target_group.arn
+    forward {
+      target_group {
+        arn = aws_lb_target_group.my_target_group.arn
+      }
+
     }
+  }
 }
 
 # HTTP Listener
