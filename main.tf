@@ -158,9 +158,9 @@ resource "aws_lb_target_group" "my_target_group" {
 # Attach Auto Scaling Group to Target Group
 resource "aws_autoscaling_group" "my_asg" {
   name                      = "eagler-asg"
-  min_size                  = 1
+  min_size                  = 2
   max_size                  = 4
-  desired_capacity          = 1
+  desired_capacity          = 2
   vpc_zone_identifier       = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id]
   launch_configuration      = aws_launch_configuration.my_lc.name
   health_check_type         = "EC2"
